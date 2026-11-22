@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf9f0ffa1ae555d45800748c4ab65d41, type: 3}
+  m_Name: MiniSettings
+  m_EditorClassIdentifier: Mini.Runtime::Mini.App.MiniSettings
+  serviceMode: 1
+  backendUrl: http://127.0.0.1:8787
+  requestTimeoutSeconds: 40
+  ttsVoice: default
+  maxHistoryMessages: 16
+  maxReplyCharacters: 450
+  sleepAfterSeconds: 180
+  allowBargeIn: 1
+  bargeInMultiplier: 2.5
+  wakeUpSeconds: 1.4
+  reactionSeconds: 1.2
+  errorSeconds: 2.5
+  voiceActivity:
+    speechToNoiseRatio: 3
+    minSpeechLevel: 0.012
+    startFrames: 4
+    endSilenceSeconds: 0.8
+    minUtteranceSeconds: 0.35
+    maxUtteranceSeconds: 15
+    preRollSeconds: 0.3
+  startInPlacementMode: 1
+  defaultSurfaceHeight: 0
+  showSubtitles: 1
+  showPrivacyNotice: 1
+  privacyNoticeSeconds: 10

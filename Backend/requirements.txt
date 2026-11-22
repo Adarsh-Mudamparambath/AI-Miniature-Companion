@@ -1,0 +1,6 @@
+# Free local providers (default)
+faster-whisper
+piper-tts
+numpy
+# Optional paid provider (only if MINI_CHAT_PROVIDER=anthropic)
+# anthropic

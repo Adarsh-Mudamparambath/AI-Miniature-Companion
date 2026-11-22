@@ -3,6 +3,18 @@
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
 .utmp/
+
+# --- AI Miniature Companion additions ---
+# Local AI models (too big for GitHub, >100 MB files are rejected)
+/Backend/models/
+# Secret keys - never upload
+.env
+# Editor-only files
+*.slnx
+.vscode/
+# Python caches
+__pycache__/
+*.pyc
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
