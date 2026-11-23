@@ -30,6 +30,8 @@ namespace Mini.Voice
         [SerializeField] private string microphoneDevice = "";
         [SerializeField] private VoiceActivitySettings activitySettings = new VoiceActivitySettings();
         [SerializeField] private float bargeInMultiplier = 2.5f;
+        [Tooltip("After Mini stops talking with barge-in off, keep ignoring the mic this long (room echo).")]
+        [SerializeField] private float echoTailSeconds = 0.4f;
 
         private readonly MicrophoneInput mic = new MicrophoneInput();
         private VoiceActivityDetector vad;
@@ -38,6 +40,9 @@ namespace Mini.Voice
         private bool paused;
         private bool bargeInMode;
         private bool pushToTalkActive;
+        private bool deafened;
+        private float deafUntil;
+        private static readonly Action<float[], int> DiscardChunk = (samples, count) => { };
 
         public MicrophoneStatus Status { get; private set; }
         public bool IsHearingSpeech { get { return vad != null && vad.InSpeech; } }
@@ -72,9 +77,25 @@ namespace Mini.Voice
                 Permission.RequestUserPermission(Permission.Microphone, callbacks);
                 return;
             }
+#elif UNITY_IOS && !UNITY_EDITOR
+            if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
+            {
+                SetStatus(MicrophoneStatus.WaitingForPermission);
+                StartCoroutine(RequestIosMicrophone());
+                return;
+            }
 #endif
             StartMicrophone();
         }
+
+#if UNITY_IOS && !UNITY_EDITOR
+        private System.Collections.IEnumerator RequestIosMicrophone()
+        {
+            yield return Application.RequestUserAuthorization(UserAuthorization.Microphone);
+            if (!Application.HasUserAuthorization(UserAuthorization.Microphone)) SetStatus(MicrophoneStatus.PermissionDenied);
+            else if (wantListening) StartMicrophone();
+        }
+#endif
 
         public void StopListening()
         {
@@ -107,10 +128,29 @@ namespace Mini.Voice
             ApplyDetectorMode();
         }
 
+        /// <summary>
+        /// Ignore the microphone while Mini speaks (used when barge-in is off, e.g. on phones where the
+        /// speaker sits next to the mic), plus a short echo tail after it stops.
+        /// </summary>
+        public void SetDeafened(bool on)
+        {
+            if (on)
+            {
+                deafened = true;
+                pushToTalkActive = false;
+                if (vad != null) { vad.HoldOpen = false; vad.Reset(); }
+            }
+            else if (deafened)
+            {
+                deafened = false;
+                deafUntil = Time.unscaledTime + echoTailSeconds;
+            }
+        }
+
         /// <summary>Hold-to-talk fallback for noisy rooms: captures regardless of loudness until released.</summary>
         public void BeginPushToTalk()
         {
-            if (vad == null || Status != MicrophoneStatus.Active) return;
+            if (vad == null || Status != MicrophoneStatus.Active || deafened) return;
             pushToTalkActive = true;
             vad.HoldOpen = true;
             vad.ForceStart();
@@ -186,6 +226,11 @@ namespace Mini.Voice
         private void Update()
         {
             if (Status != MicrophoneStatus.Active || vad == null) return;
+            if (deafened || Time.unscaledTime < deafUntil)
+            {
+                mic.Read(DiscardChunk); // drain, so Mini's own voice is never processed later
+                return;
+            }
             mic.Read(vad.Process);
         }
 

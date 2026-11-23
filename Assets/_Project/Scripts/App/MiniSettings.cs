@@ -45,6 +45,8 @@ namespace Mini.App
 
         [Header("Placement")]
         public bool startInPlacementMode = true;
+        [Tooltip("Mini stays silent (mic off) until it has been placed, and pauses while being moved.")]
+        public bool talkAfterPlacement;
         [Tooltip("Initial surface height in metres (0 = floor with floor-level tracking).")]
         public float defaultSurfaceHeight;
 

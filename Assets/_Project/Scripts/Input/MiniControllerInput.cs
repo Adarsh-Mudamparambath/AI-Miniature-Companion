@@ -11,7 +11,7 @@ namespace Mini.Controls
     /// right thumbstick = surface height, right B = microphone on/off, left trigger = hold to talk.
     /// </summary>
     [DisallowMultipleComponent]
-    public class MiniControllerInput : MonoBehaviour
+    public class MiniControllerInput : MiniControlsBase
     {
         private InputAction placeToggle;
         private InputAction confirm;
@@ -22,16 +22,16 @@ namespace Mini.Controls
 
         // Each button is read from the Input System AND from Meta's OVRInput, so it works whichever
         // input path the Quest runtime feeds.
-        public bool PlaceTogglePressed { get { return Log("A", Pressed(placeToggle) || OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch)); } }
-        public bool ConfirmPressed { get { return Log("RightTrigger", Pressed(confirm) || OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch)); } }
-        public bool CalibratePressed { get { return Log("RightGrip", Pressed(calibrate) || OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger, OVRInput.Controller.RTouch)); } }
-        public bool MicTogglePressed { get { return Log("B", Pressed(micToggle) || OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.RTouch)); } }
-        public bool TalkPressed { get { return Log("LeftTrigger", Pressed(talk) || OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch)); } }
-        public bool TalkReleased
+        public override bool PlaceTogglePressed { get { return Log("A", Pressed(placeToggle) || OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch)); } }
+        public override bool ConfirmPressed { get { return Log("RightTrigger", Pressed(confirm) || OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch)); } }
+        public override bool CalibratePressed { get { return Log("RightGrip", Pressed(calibrate) || OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger, OVRInput.Controller.RTouch)); } }
+        public override bool MicTogglePressed { get { return Log("B", Pressed(micToggle) || OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.RTouch)); } }
+        public override bool TalkPressed { get { return Log("LeftTrigger", Pressed(talk) || OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch)); } }
+        public override bool TalkReleased
         {
             get { return (talk != null && talk.WasReleasedThisFrame()) || OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch); }
         }
-        public Vector2 Adjust
+        public override Vector2 Adjust
         {
             get
             {
@@ -40,6 +40,19 @@ namespace Mini.Controls
                 return a.sqrMagnitude >= b.sqrMagnitude ? a : b;
             }
         }
+
+        public override string PlacementHint
+        {
+            get
+            {
+                return "Point at the floor or a table and pull the RIGHT TRIGGER to place me.\n" +
+                       "To put me on a table: touch the table with the controller and squeeze GRIP.\n" +
+                       "Thumbstick up/down adjusts the height. Press A to move me again later.";
+            }
+        }
+
+        public override string MicOffHint { get { return "Press B to turn the microphone off."; } }
+        public override string PermissionHint { get { return "Allow it in the headset: Settings > Apps > Mini > Permissions."; } }
 
         private static bool Log(string button, bool pressed)
         {

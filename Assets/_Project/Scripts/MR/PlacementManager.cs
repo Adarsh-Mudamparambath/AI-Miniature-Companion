@@ -27,8 +27,10 @@ namespace Mini.MR
         [SerializeField] private Transform pointer;
         [Tooltip("Component implementing ISpatialEnvironmentProvider (ManualSurfaceProvider on Quest 2).")]
         [SerializeField] private MonoBehaviour environmentProvider;
-        [SerializeField] private MiniControllerInput controls;
+        [SerializeField] private MiniControlsBase controls;
         [SerializeField] private Material reticleMaterial;
+        [Tooltip("Hide Mini until it has been placed once (phone AR: there is no sensible default spot).")]
+        [SerializeField] private bool hideUntilPlaced;
 
         [Header("Movement")]
         [SerializeField] private float moveStep = 0.15f;
@@ -48,6 +50,9 @@ namespace Mini.MR
 
         public bool IsPlacing { get; private set; }
         public bool HasBeenPlaced { get; private set; }
+
+        /// <summary>True while Mini is hidden because it has not been placed yet.</summary>
+        public bool IsHiddenUntilPlaced { get { return hideUntilPlaced && !HasBeenPlaced; } }
         public ISpatialEnvironmentProvider Environment { get { return environment; } }
 
         /// <summary>Raised with true when placement mode starts and false when it ends.</summary>
@@ -119,6 +124,17 @@ namespace Mini.MR
             if (Placed != null) Placed();
         }
 
+        /// <summary>Forget the placement (e.g. leaving the AR session): Mini counts as never placed.</summary>
+        public void ResetPlacement()
+        {
+            bool wasPlacing = IsPlacing;
+            IsPlacing = false;
+            HasBeenPlaced = false;
+            hasValidPreview = false;
+            SetReticleVisible(false);
+            if (wasPlacing && PlacingChanged != null) PlacingChanged(false);
+        }
+
         /// <summary>Place Mini in front of the user at the current surface height.</summary>
         public void ComeHere()
         {
@@ -144,13 +160,13 @@ namespace Mini.MR
             else targetPosition = miniAnchor != null ? miniAnchor.position : targetPosition;
         }
 
-        /// <summary>Use the pointer (controller touching the table) as the new surface height.</summary>
         /// <summary>True on the headset, and in the Editor only when an XR device is running.</summary>
         private static bool UseTrackedPointer
         {
             get { return !Application.isEditor || UnityEngine.XR.XRSettings.isDeviceActive; }
         }
 
+        /// <summary>Use the pointer (controller touching the table) as the new surface height.</summary>
         public void CalibrateSurfaceToPointer()
         {
             Transform source = pointer != null && UseTrackedPointer ? pointer : null;
@@ -168,6 +184,7 @@ namespace Mini.MR
             else SetReticleVisible(false);
 
             if (miniAnchor == null) return;
+            UpdateHiddenVisuals();
             float k = 1f - Mathf.Exp(-followSharpness * Time.deltaTime);
             miniAnchor.position = Vector3.Lerp(miniAnchor.position, targetPosition, k);
             miniAnchor.rotation = Quaternion.Slerp(miniAnchor.rotation, targetRotation, k);
@@ -217,6 +234,9 @@ namespace Mini.MR
 
         private Ray GetPointerRay()
         {
+            Ray controlsRay;
+            if (controls != null && controls.TryGetPointerRay(out controlsRay)) return controlsRay;
+
             if (UseTrackedPointer && pointer != null)
             {
                 return new Ray(pointer.position, pointer.forward);
@@ -287,6 +307,26 @@ namespace Mini.MR
             Vector3 f = userHead.forward;
             f.y = 0f;
             return f.sqrMagnitude > 1e-4f ? f.normalized : Vector3.forward;
+        }
+
+        private Renderer[] hiddenRenderers;
+
+        private void UpdateHiddenVisuals()
+        {
+            bool hide = IsHiddenUntilPlaced && !(IsPlacing && hasValidPreview);
+            if (hide && hiddenRenderers == null)
+            {
+                hiddenRenderers = miniAnchor.GetComponentsInChildren<Renderer>();
+                foreach (Renderer r in hiddenRenderers) if (r != null) r.enabled = false;
+            }
+            else if (!hide && hiddenRenderers != null)
+            {
+                foreach (Renderer r in hiddenRenderers) if (r != null) r.enabled = true;
+                hiddenRenderers = null;
+                // First appearance: jump to the preview instead of gliding in from the origin.
+                miniAnchor.position = targetPosition;
+                miniAnchor.rotation = targetRotation;
+            }
         }
 
         private void CreateReticle()

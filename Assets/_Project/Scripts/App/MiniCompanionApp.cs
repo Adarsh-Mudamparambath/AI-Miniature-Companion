@@ -27,7 +27,7 @@ namespace Mini.App
         [SerializeField] private CharacterManager character;
         [SerializeField] private PlacementManager placement;
         [SerializeField] private CompanionHud hud;
-        [SerializeField] private MiniControllerInput controls;
+        [SerializeField] private MiniControlsBase controls;
 
         public MiniSettings Settings { get { return settings; } }
         public ConversationManager Conversation { get { return conversation; } }
@@ -55,12 +55,54 @@ namespace Mini.App
                 placement.SetDefaultSurfaceHeight(settings.defaultSurfaceHeight);
             }
             if (conversation != null) conversation.Initialize(settings, stt, ai, tts);
-            if (hud != null) hud.Bind(settings, conversation, voice, placement, userHead);
+            if (hud != null) hud.Bind(settings, conversation, voice, placement, userHead, controls);
         }
+
+        private bool greetedThisSession;
 
         private void Start()
         {
+            if (placement != null && settings.talkAfterPlacement) placement.PlacingChanged += HandlePlacingChanged;
             if (placement != null && settings.startInPlacementMode) placement.BeginPlacement();
+        }
+
+        private void OnDestroy()
+        {
+            if (placement != null) placement.PlacingChanged -= HandlePlacingChanged;
+        }
+
+        /// <summary>talkAfterPlacement: silent while placing, talking once Mini stands somewhere.</summary>
+        private void HandlePlacingChanged(bool placing)
+        {
+            if (conversation == null) return;
+            if (placing)
+            {
+                conversation.Deactivate();
+            }
+            else if (placement.HasBeenPlaced)
+            {
+                conversation.Activate(!greetedThisSession);
+                if (!greetedThisSession && hud != null) hud.ShowPrivacyNotice();
+                greetedThisSession = true;
+            }
+        }
+
+        /// <summary>Start a new session: placement first (and, with talkAfterPlacement, talking after that).</summary>
+        public void BeginSession()
+        {
+            if (placement != null) placement.BeginPlacement();
+        }
+
+        /// <summary>Leave the session: Mini goes quiet, forgets its spot and the conversation.</summary>
+        public void EndSession()
+        {
+            if (conversation != null)
+            {
+                conversation.Deactivate();
+                conversation.ClearConversation();
+            }
+            if (placement != null) placement.ResetPlacement();
+            greetedThisSession = false;
         }
 
         private void BuildServices(out ISpeechToTextService stt, out IAIConversationService ai, out ITextToSpeechService tts)

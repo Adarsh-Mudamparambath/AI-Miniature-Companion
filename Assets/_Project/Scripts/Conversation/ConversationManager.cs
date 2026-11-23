@@ -96,7 +96,7 @@ namespace Mini.Conversation
             }
         }
 
-        private async void Start()
+        private void Start()
         {
             if (!initialized)
             {
@@ -105,17 +105,37 @@ namespace Mini.Conversation
             }
 
             Debug.Log("[Mini] Services → " + ServiceSummary);
+            if (settings.talkAfterPlacement)
+            {
+                // Silent until the app activates us (after Mini has been placed).
+                SetState(CompanionState.Sleeping);
+                return;
+            }
+            Activate(true);
+        }
+
+        /// <summary>True while Mini is listening and able to talk.</summary>
+        public bool IsActive { get; private set; }
+
+        /// <summary>Start listening (and optionally say hello). Safe to call repeatedly.</summary>
+        public async void Activate(bool greet)
+        {
+            if (!initialized || IsActive || lifetimeCts == null) return;
+            IsActive = true;
+            RaiseStatus(string.Empty);
             SetState(CompanionState.Initialising);
             try
             {
                 await Awaitable.WaitForSecondsAsync(0.5f, lifetimeCts.Token);
+                if (!IsActive) return;
                 if (voice != null) voice.StartListening();
                 SetState(CompanionState.WakeUp);
                 await Awaitable.WaitForSecondsAsync(settings.wakeUpSeconds, lifetimeCts.Token);
-                if (State == CompanionState.WakeUp)
+                if (!IsActive || State != CompanionState.WakeUp) return;
+                SetState(CompanionState.Idle);
+                if (greet)
                 {
                     // A short spoken hello: friendly, and proves straight away that audio works.
-                    SetState(CompanionState.Idle);
                     CancellationToken ct = BeginTurn();
                     await SpeakAsync("Hi! I'm Mini!", BehaviourCue.Make(CharacterEmotion.Happy, 0.7f, CharacterGesture.Wave), ct);
                 }
@@ -124,15 +144,27 @@ namespace Mini.Conversation
             catch (Exception e)
             {
                 Debug.LogWarning("[Mini] Greeting failed: " + e.Message);
-                SetState(CompanionState.Idle);
+                if (IsActive) SetState(CompanionState.Idle);
             }
+        }
+
+        /// <summary>Stop talking and listening (microphone off) until <see cref="Activate"/> is called again.</summary>
+        public void Deactivate()
+        {
+            if (!IsActive) return;
+            IsActive = false;
+            CancelTurn();
+            StopVoiceAudio();
+            if (voice != null) voice.StopListening();
+            RaiseStatus(string.Empty);
+            SetState(CompanionState.Sleeping);
         }
 
         private void Update()
         {
             if (!initialized) return;
 
-            if (State == CompanionState.Idle && (voice == null || !voice.IsHearingSpeech))
+            if (IsActive && State == CompanionState.Idle && (voice == null || !voice.IsHearingSpeech))
             {
                 idleTimer += Time.deltaTime;
                 if (settings.sleepAfterSeconds > 0f && idleTimer >= settings.sleepAfterSeconds)
@@ -453,11 +485,18 @@ namespace Mini.Conversation
         private void SetState(CompanionState newState)
         {
             if (State == newState && newState != CompanionState.Initialising) return;
+            bool wasSpeaking = State == CompanionState.Speaking;
             State = newState;
             idleTimer = 0f;
             Debug.Log("[Mini] State → " + newState);
             if (character != null) character.SetState(newState);
-            if (voice != null) voice.SetBargeInMode(newState == CompanionState.Speaking);
+            if (voice != null)
+            {
+                bool speaking = newState == CompanionState.Speaking;
+                voice.SetBargeInMode(speaking);
+                // Without barge-in (phones: speaker next to the mic) Mini must not hear its own voice.
+                if (!settings.allowBargeIn && speaking != wasSpeaking) voice.SetDeafened(speaking);
+            }
             if (StateChanged != null) StateChanged(newState);
         }
 

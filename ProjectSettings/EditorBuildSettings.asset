@@ -9,14 +9,23 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/Mini_MR_Robot.unity
     guid: 893355beee1b6e1439273a8f5a38e9cf
   - enabled: 0
+    path: Assets/_Project/Scenes/Mini_Phone_Boot.unity
+    guid: 7b3746052f2fd9a46b6eba5d24aeb50c
+  - enabled: 0
+    path: Assets/_Project/Scenes/Mini_Phone_AR.unity
+    guid: d2a2ff083f22ddc438ace19a6deb7630
+  - enabled: 0
     path: Assets/_Project/Scenes/Mini_MR.unity
     guid: bd71f8f3a8455d449be811b755b700ac
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: b9a990a0cfc02b64b8681f19e9b034ea, type: 2}
+    UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: b297761a94fa68d4bae06da4ed91f083, type: 2}
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: b2174a71d376e754fb1ec5c47dccb993, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 3ed511188c4075b42abc74f49c251864, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 7c0c6267e9e6f2a4e87a69e562048bab, type: 2}
   m_UseUCBPForAssetBundles: 0
