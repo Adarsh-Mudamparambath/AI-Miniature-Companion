@@ -47,7 +47,8 @@ namespace Mini.Controls
             {
                 return "Point at the floor or a table and pull the RIGHT TRIGGER to place me.\n" +
                        "To put me on a table: touch the table with the controller and squeeze GRIP.\n" +
-                       "Thumbstick up/down adjusts the height. Press A to move me again later.";
+                       "Thumbstick up/down adjusts the height. Press A to move me again later.\n" +
+                       "LEFT MENU button: back to the main menu.";
             }
         }
 

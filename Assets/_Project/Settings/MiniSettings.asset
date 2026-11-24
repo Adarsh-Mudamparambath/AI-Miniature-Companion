@@ -32,7 +32,8 @@ MonoBehaviour:
     minUtteranceSeconds: 0.35
     maxUtteranceSeconds: 15
     preRollSeconds: 0.3
-  startInPlacementMode: 1
+  startInPlacementMode: 0
+  talkAfterPlacement: 1
   defaultSurfaceHeight: 0
   showSubtitles: 1
   showPrivacyNotice: 1

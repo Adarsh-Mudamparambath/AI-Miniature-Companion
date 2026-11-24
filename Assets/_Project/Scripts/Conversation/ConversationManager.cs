@@ -371,7 +371,13 @@ namespace Mini.Conversation
             {
                 voiceSource.clip = clip;
                 voiceSource.Play();
-                Debug.Log("[Mini] Speaking " + clip.length.ToString("0.0") + "s (volume " + voiceSource.volume + ")");
+                AudioListener listener = FindFirstObjectByType<AudioListener>();
+                Debug.Log("[Mini] Speaking " + clip.length.ToString("0.0") + "s (volume " + voiceSource.volume +
+                          ", 3D " + voiceSource.spatialBlend.ToString("0.0") + ", listener " +
+                          (listener != null && listener.isActiveAndEnabled
+                              ? listener.name + " " + Vector3.Distance(listener.transform.position, voiceSource.transform.position).ToString("0.0") + " m"
+                              : "MISSING") +
+                          ", global volume " + AudioListener.volume + (AudioListener.pause ? " PAUSED" : "") + ")");
                 // AudioSource.isPlaying is false while the app is paused, so also guard on time.
                 float safetyEnd = Time.realtimeSinceStartup + clip.length + 2f;
                 while (voiceSource.isPlaying && Time.realtimeSinceStartup < safetyEnd)

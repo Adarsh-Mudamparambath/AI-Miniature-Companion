@@ -1039,6 +1039,7 @@ GameObject:
   - component: {fileID: 1458106277}
   - component: {fileID: 1458106276}
   - component: {fileID: 1458106275}
+  - component: {fileID: 1458106285}
   m_Layer: 0
   m_Name: MiniApp
   m_TagString: Untagged
@@ -1079,6 +1080,8 @@ MonoBehaviour:
   chestLight: {fileID: 1410732469}
   lightHeight: 0.34
   labelHeight: 0.42
+  labelScale: 1
+  screenSpacePanel: 0
 --- !u!114 &1458106277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1109,6 +1112,7 @@ MonoBehaviour:
   environmentProvider: {fileID: 1458106279}
   controls: {fileID: 1458106277}
   reticleMaterial: {fileID: 2100000, guid: 67c12abcdd8b9c84baebe583737b021d, type: 2}
+  hideUntilPlaced: 1
   moveStep: 0.15
   minDistance: 0.35
   maxDistance: 3
@@ -1172,6 +1176,7 @@ MonoBehaviour:
     maxUtteranceSeconds: 15
     preRollSeconds: 0.3
   bargeInMultiplier: 2.5
+  echoTailSeconds: 0.4
 --- !u!114 &1458106282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1223,6 +1228,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1458106285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1458106274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b2e45343cc5bd942994fda7cc4cf67d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mini.Runtime::Mini.App.QuestAppFlow
+  app: {fileID: 1458106283}
+  placement: {fileID: 1458106278}
+  hud: {fileID: 1458106276}
+  userHead: {fileID: 146528538}
+  pointer: {fileID: 146528537}
+  distance: 1.15
+  dropBelowEyes: 0.08
+  minimumLoadingSeconds: 1.8
+  healthTimeoutSeconds: 3
 --- !u!1 &1671345785
 GameObject:
   m_ObjectHideFlags: 0
@@ -1362,7 +1388,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0

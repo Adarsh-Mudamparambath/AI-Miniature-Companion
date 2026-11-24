@@ -258,7 +258,7 @@ namespace Mini.App
             }
             else
             {
-                panel = CreateCanvas("MiniGuidancePanel", new Vector2(760, 230), 0.0008f);
+                panel = CreateCanvas("MiniGuidancePanel", new Vector2(760, 270), 0.0008f);
                 panelCanvas = panel.transform;
             }
             panelRoot = panel;
@@ -273,7 +273,7 @@ namespace Mini.App
                 bgRect.offsetMin = Vector2.zero;
                 bgRect.offsetMax = Vector2.zero;
                 bg.color = new Color(0.05f, 0.08f, 0.12f, 0.85f);
-                panelText = CreateText(panelCanvas, font, 28, Vector2.zero, new Vector2(720, 210), Color.white);
+                panelText = CreateText(panelCanvas, font, 28, Vector2.zero, new Vector2(720, 250), Color.white);
                 if (userHead != null) panelCanvas.position = userHead.position + userHead.forward * 0.9f;
             }
             else

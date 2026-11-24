@@ -51,6 +51,9 @@ namespace Mini.MR
         public bool IsPlacing { get; private set; }
         public bool HasBeenPlaced { get; private set; }
 
+        /// <summary>False while a menu is open, so its controller buttons don't also start placement.</summary>
+        public bool InputEnabled { get; set; } = true;
+
         /// <summary>True while Mini is hidden because it has not been placed yet.</summary>
         public bool IsHiddenUntilPlaced { get { return hideUntilPlaced && !HasBeenPlaced; } }
         public ISpatialEnvironmentProvider Environment { get { return environment; } }
@@ -192,7 +195,7 @@ namespace Mini.MR
 
         private void HandleInput()
         {
-            if (controls == null) return;
+            if (controls == null || !InputEnabled) return;
 
             if (controls.PlaceTogglePressed)
             {
